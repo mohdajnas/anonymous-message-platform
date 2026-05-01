@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — Whisper</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
+        rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #ffffff;
+            --surface: #f0fdf4;
+            --card: #ffffff;
+            --border: rgba(22, 101, 52, 0.08);
+            --border-hover: rgba(22, 101, 52, 0.15);
+            --text: #14532d;
+            --muted: rgba(20, 83, 45, 0.5);
+            --accent: #16a34a;
+            --accent-soft: rgba(22, 163, 74, 0.1);
+            --accent-glow: rgba(22, 163, 74, 0.2);
+            --serif: 'Instrument Serif', Georgia, serif;
+            --sans: 'DM Sans', system-ui, sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--sans);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* noise overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.6;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+            padding: 40px 24px;
+        }
+
+        /* ── LOGIN ── */
+        #login-view {
+            max-width: 400px;
+            margin: 100px auto 0;
+            text-align: center;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .logo-mark {
+            width: 56px;
+            height: 56px;
+            background: var(--accent-soft);
+            border: 1px solid rgba(22, 163, 74, 0.25);
+            border-radius: 18px;
+            display: grid;
+            place-items: center;
+            margin: 0 auto 24px;
+        }
+
+        h1 {
+            font-family: var(--serif);
+            font-size: 38px;
+            font-weight: 400;
+            font-style: italic;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--muted);
+            margin-bottom: 32px;
+        }
+
+        .login-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 10px 40px -10px rgba(22, 101, 52, 0.05);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--muted);
+            margin-bottom: 8px;
+            margin-left: 4px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text);
+            font-family: var(--sans);
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--accent);
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-family: var(--sans);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* ── DASHBOARD ── */
+        #dash-view {
+            display: none;
+            animation: fadeIn 0.6s ease;
+        }
+
+        .dash-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 40px;
+        }
+
+        .dash-title h2 {
+            font-family: var(--serif);
+            font-size: 32px;
+            font-style: italic;
+            font-weight: 400;
+        }
+
+        .dash-title p {
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .dash-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px 16px;
+            font-size: 13px;
+        }
+
+        .btn-outline:hover {
+            background: var(--surface);
+            border-color: var(--accent);
+            box-shadow: none;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 24px;
+            border-radius: 20px;
+        }
+
+        .stat-val {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* ── TABLE ── */
+        .table-wrap {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            overflow-x: auto;
+            box-shadow: 0 10px 40px -10px rgba(22, 101, 52, 0.05);
+            -webkit-overflow-scrolling: touch;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background: var(--surface);
+            padding: 16px 24px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 20px 24px;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .td-sl {
+            width: 60px;
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .td-time {
+            width: 180px;
+            white-space: nowrap;
+        }
+
+        .td-msg {
+            font-family: var(--serif);
+            font-style: italic;
+            font-size: 16px;
+            line-height: 1.5;
+            max-width: 400px;
+        }
+
+        .copy-cell {
+            width: 60px;
+            text-align: center;
+        }
+
+        .action-btn {
+            background: transparent;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: var(--accent-soft);
+            color: var(--accent);
+        }
+
+        .mood-tag {
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 100px;
+            margin-right: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .mood-tag.happy { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+        .mood-tag.sad { background: rgba(132, 204, 22, 0.1); color: #84cc16; }
+        .mood-tag.angry { background: rgba(220, 38, 38, 0.1); color: #dc2626; }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 768px) {
+            .container {
+                padding: 24px 16px;
+            }
+
+            #login-view {
+                margin: 60px auto 0;
+            }
+
+            .dash-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 20px;
+                margin-bottom: 32px;
+            }
+
+            .dash-actions {
+                width: 100%;
+            }
+
+            .dash-actions .btn {
+                flex: 1;
+                font-size: 12px;
+                padding: 10px;
+            }
+
+            .stat-card {
+                padding: 16px;
+            }
+
+            .stat-val {
+                font-size: 24px;
+            }
+
+            th, td {
+                padding: 14px 16px;
+            }
+
+            .td-time {
+                width: 140px;
+                font-size: 12px;
+            }
+
+            .td-msg {
+                font-size: 14px;
+                min-width: 200px;
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: var(--card);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 12px 24px;
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 999;
+        }
+
+        .toast.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- LOGIN VIEW -->
+        <div id="login-view">
+            <div class="logo-mark">
+                <svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:26px; height:26px;">
+                    <path
+                        d="M11 2C6.03 2 2 5.8 2 10.5c0 2.1.8 4 2.1 5.5L3 20l4.5-1.4C8.8 19.5 9.9 19.8 11 19.8c4.97 0 9-3.8 9-8.5S15.97 2 11 2z"
+                        stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                    <circle cx="8" cy="10.5" r="1" fill="var(--accent)" />
+                    <circle cx="11" cy="10.5" r="1" fill="var(--accent)" />
+                    <circle cx="14" cy="10.5" r="1" fill="var(--accent)" />
+                </svg>
+            </div>
+            <h1>Admin Access</h1>
+            <p class="subtitle">Secure login for MSF CUSAT Unit</p>
+
+            <div class="login-card">
+                <div class="input-group">
+                    <label>Email Address</label>
+                    <input type="email" id="email" placeholder="msf@cusat.cochin">
+                </div>
+                <div class="input-group">
+                    <label>Security Key</label>
+                    <input type="password" id="password" placeholder="••••••••••••">
+                </div>
+                <button class="btn" id="login-btn" onclick="login()">
+                    <i data-lucide="lock"></i> Authenticate
+                </button>
+            </div>
+        </div>
+
+        <!-- DASHBOARD VIEW -->
+        <div id="dash-view">
+            <div class="dash-header">
+                <div class="dash-title">
+                    <h2>Messages Inbox</h2>
+                    <p>Manage and export anonymous submissions</p>
+                </div>
+                <div class="dash-actions">
+                    <button class="btn btn-outline" onclick="exportCSV()">
+                        <i data-lucide="download"></i> Export CSV
+                    </button>
+                    <button class="btn btn-outline" onclick="logout()">
+                        <i data-lucide="log-out"></i> Logout
+                    </button>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-val" id="total-count">0</div>
+                    <div class="stat-label">Total Messages</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val" id="today-count">0</div>
+                    <div class="stat-label">Received Today</div>
+                </div>
+            </div>
+
+            <div class="table-wrap">
+                <table id="message-table">
+                    <thead>
+                        <tr>
+                            <th class="td-sl">#</th>
+                            <th class="td-time">Timestamp</th>
+                            <th class="td-msg">Message</th>
+                            <th class="copy-cell"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body">
+                        <!-- Rows will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAovMb1A1D8NXPgyHXDdofzg29vXuDFPQE",
+            authDomain: "msf-cusat-7a07b.firebaseapp.com",
+            projectId: "msf-cusat-7a07b",
+            storageBucket: "msf-cusat-7a07b.firebasestorage.app",
+            messagingSenderId: "687295900937",
+            appId: "1:687295900937:web:1c9a0be58feecfb801f7d8"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        let allMessages = [];
+
+        async function login() {
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('login-btn');
+
+            if (email !== 'msf@cusat.cochin') {
+                showToast('Invalid credentials');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader-2" class="animate-spin"></i> Authenticating...';
+            lucide.createIcons();
+
+            try {
+                await auth.signInWithEmailAndPassword(email, password);
+                document.getElementById('login-view').style.display = 'none';
+                document.getElementById('dash-view').style.display = 'block';
+                fetchMessages();
+            } catch (error) {
+                console.error(error);
+                showToast('Authentication failed');
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="lock"></i> Authenticate';
+                lucide.createIcons();
+            }
+        }
+
+        async function fetchMessages() {
+            try {
+                const snapshot = await db.collection('messages').orderBy('timestamp', 'desc').get();
+                allMessages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderTable();
+                updateStats();
+            } catch (error) {
+                console.error(error);
+                showToast('Error fetching data');
+            }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = '';
+
+            allMessages.forEach((msg, index) => {
+                const row = document.createElement('tr');
+                const time = msg.timestamp ? new Date(msg.timestamp.seconds * 1000).toLocaleString() : 'N/A';
+                
+                row.innerHTML = `
+                    <td class="td-sl">${allMessages.length - index}</td>
+                    <td class="td-time">${time}</td>
+                    <td class="td-msg">${msg.text}</td>
+                    <td class="copy-cell">
+                        <button class="action-btn" onclick="copyText('${msg.text.replace(/'/g, "\\'")}')" title="Copy message">
+                            <i data-lucide="copy"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+            lucide.createIcons();
+        }
+
+        function updateStats() {
+            document.getElementById('total-count').textContent = allMessages.length;
+            const today = new Date().toDateString();
+            const todayMsgs = allMessages.filter(m => m.timestamp && new Date(m.timestamp.seconds * 1000).toDateString() === today);
+            document.getElementById('today-count').textContent = todayMsgs.length;
+        }
+
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => showToast('Copied to clipboard'));
+        }
+
+        function exportCSV() {
+            if (allMessages.length === 0) return;
+            
+            let csv = 'Sl No,Timestamp,Message\n';
+            allMessages.forEach((msg, index) => {
+                const time = msg.timestamp ? new Date(msg.timestamp.seconds * 1000).toLocaleString() : 'N/A';
+                const escapedMsg = `"${msg.text.replace(/"/g, '""')}"`;
+                csv += `${allMessages.length - index},${time},${escapedMsg}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `whisper_messages_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
+
+        function logout() {
+            auth.signOut().then(() => {
+                location.reload();
+            });
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2800);
+        }
+
+        lucide.createIcons();
+
+        // Check if already logged in
+        auth.onAuthStateChanged(user => {
+            if (user && user.email === 'msf@cusat.cochin') {
+                document.getElementById('login-view').style.display = 'none';
+                document.getElementById('dash-view').style.display = 'block';
+                fetchMessages();
+            }
+        });
+    </script>
+</body>
+
+</html>
