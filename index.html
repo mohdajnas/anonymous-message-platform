@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>Whisper — Anonymous Messages</title>
     <link
-        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Anek+Malayalam:wght@100..800&display=swap"
         rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Firebase SDKs -->
@@ -186,18 +186,16 @@
             border-radius: 18px;
             padding: 20px;
             color: var(--text);
-            font-family: var(--serif);
-            font-size: 17px;
+            font-family: 'Poppins', 'Anek Malayalam', var(--sans);
+            font-size: 16px;
             line-height: 1.65;
             resize: none;
             outline: none;
             transition: border-color 0.25s;
-            font-style: italic;
         }
 
         textarea::placeholder {
             color: var(--muted);
-            font-style: italic;
         }
 
         textarea:focus {
