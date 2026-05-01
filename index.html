@@ -663,9 +663,9 @@
             </div>
 
             <div class="textarea-wrap">
-                <textarea id="msg-input" placeholder="Say whatever you've been holding in…" maxlength="500"
+                <textarea id="msg-input" placeholder="Say whatever you've been holding in…" maxlength="2000"
                     oninput="onInput()"></textarea>
-                <span class="char-count" id="char-count">0 / 500</span>
+                <span class="char-count" id="char-count">0 / 2000</span>
             </div>
 
             <div class="privacy-assurance">
@@ -720,7 +720,7 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        const MAX = 500;
+        const MAX = 2000;
         let selectedMood = 'neutral';
 
 
@@ -737,7 +737,7 @@
             const v = document.getElementById('msg-input').value;
             const cc = document.getElementById('char-count');
             cc.textContent = v.length + ' / ' + MAX;
-            cc.classList.toggle('warn', v.length > 450);
+            cc.classList.toggle('warn', v.length > 1900);
             document.getElementById('send-btn').disabled = v.trim().length < 2;
         }
 
