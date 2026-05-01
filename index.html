@@ -8,6 +8,10 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
         rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
     <style>
         *,
         *::before,
@@ -148,6 +152,14 @@
             cursor: pointer;
             transition: all 0.2s ease;
             white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mood-chip i {
+            width: 14px;
+            height: 14px;
         }
 
         .mood-chip:hover {
@@ -205,50 +217,42 @@
             color: var(--accent);
         }
 
-        .options-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+        .privacy-assurance {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
             margin-bottom: 24px;
         }
 
-        .option-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 14px;
-            padding: 14px;
-            cursor: pointer;
-            transition: all 0.2s ease;
+        .privacy-icon {
+            font-size: 20px;
+            width: 44px;
+            height: 44px;
+            background: var(--accent-soft);
+            border-radius: 12px;
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
         }
 
-        .option-card:hover {
-            border-color: var(--border-hover);
-        }
-
-        .option-card.selected {
-            background: var(--teal-soft);
-            border-color: rgba(16, 185, 129, 0.3);
-        }
-
-        .option-icon {
-            font-size: 18px;
-            margin-bottom: 6px;
-            display: block;
-        }
-
-        .option-title {
-            font-size: 13px;
-            font-weight: 500;
+        .privacy-title {
+            font-size: 14px;
+            font-weight: 600;
             color: var(--text);
-            display: block;
             margin-bottom: 2px;
         }
 
-        .option-desc {
-            font-size: 11px;
+        .privacy-desc {
+            font-size: 12px;
             color: var(--muted);
             line-height: 1.4;
         }
+
+
 
         .send-btn {
             width: 100%;
@@ -651,11 +655,11 @@
         <div id="compose-view">
             <span class="label">How are you feeling?</span>
             <div class="mood-row">
-                <button class="mood-chip" onclick="selectMood(this,'happy')">😌 Happy</button>
-                <button class="mood-chip" onclick="selectMood(this,'sad')">💙 Sad</button>
-                <button class="mood-chip" onclick="selectMood(this,'angry')">🔥 Angry</button>
-                <button class="mood-chip" onclick="selectMood(this,'anxious')">🌀 Anxious</button>
-                <button class="mood-chip" onclick="selectMood(this,'grateful')">✨ Grateful</button>
+                <button class="mood-chip" onclick="selectMood(this,'happy')"><i data-lucide="smile"></i> Happy</button>
+                <button class="mood-chip" onclick="selectMood(this,'sad')"><i data-lucide="frown"></i> Sad</button>
+                <button class="mood-chip" onclick="selectMood(this,'angry')"><i data-lucide="flame"></i> Angry</button>
+                <button class="mood-chip" onclick="selectMood(this,'anxious')"><i data-lucide="cloud-lightning"></i> Anxious</button>
+                <button class="mood-chip" onclick="selectMood(this,'grateful')"><i data-lucide="sparkles"></i> Grateful</button>
             </div>
 
             <div class="textarea-wrap">
@@ -664,16 +668,11 @@
                 <span class="char-count" id="char-count">0 / 500</span>
             </div>
 
-            <div class="options-grid">
-                <div class="option-card selected" id="opt-anon" onclick="toggleOpt('anon')">
-                    <span class="option-icon">🎭</span>
-                    <span class="option-title">Anonymous</span>
-                    <span class="option-desc">No name, no trace</span>
-                </div>
-                <div class="option-card" id="opt-delete" onclick="toggleOpt('delete')">
-                    <span class="option-icon">⏳</span>
-                    <span class="option-title">Self-destruct</span>
-                    <span class="option-desc">Deletes in 24 h</span>
+            <div class="privacy-assurance">
+                <div class="privacy-icon"><i data-lucide="shield-check"></i></div>
+                <div class="privacy-text">
+                    <p class="privacy-title">Fully Anonymous</p>
+                    <p class="privacy-desc">We don't track IPs, locations, or personal data. Your identity is never stored.</p>
                 </div>
             </div>
 
@@ -693,8 +692,8 @@
                     <a href="https://chat.whatsapp.com/DCLsqULYX4W3zNwpLZL8lH" target="_blank" class="footer-link">
                         <span>WhatsApp</span>
                     </a>
-                    <a href="#" class="footer-link">
-                        <span>Twitter</span>
+                    <a href="https://www.facebook.com/msfcusat" target="_blank" class="footer-link">
+                        <span>Facebook</span>
                     </a>
                 </div>
                 <p class="footer-credit">© 2026 MSF CUSAT Unit. All rights reserved.</p>
@@ -707,11 +706,22 @@
     <div class="toast" id="toast"></div>
 
     <script>
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAovMb1A1D8NXPgyHXDdofzg29vXuDFPQE",
+            authDomain: "msf-cusat-7a07b.firebaseapp.com",
+            projectId: "msf-cusat-7a07b",
+            storageBucket: "msf-cusat-7a07b.firebasestorage.app",
+            messagingSenderId: "687295900937",
+            appId: "1:687295900937:web:1c9a0be58feecfb801f7d8"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         const MAX = 500;
         let selectedMood = 'neutral';
-        let anonOn = true;
-        let deleteOn = false;
-        let messages = JSON.parse(localStorage.getItem('whisper-msgs') || '[]');
 
 
 
@@ -721,12 +731,7 @@
             selectedMood = mood;
         }
 
-        function toggleOpt(id) {
-            const el = document.getElementById('opt-' + id);
-            el.classList.toggle('selected');
-            if (id === 'anon') anonOn = el.classList.contains('selected');
-            if (id === 'delete') deleteOn = el.classList.contains('selected');
-        }
+
 
         function onInput() {
             const v = document.getElementById('msg-input').value;
@@ -736,35 +741,36 @@
             document.getElementById('send-btn').disabled = v.trim().length < 2;
         }
 
-        function sendMessage() {
+        async function sendMessage() {
+            const btn = document.getElementById('send-btn');
             const text = document.getElementById('msg-input').value.trim();
             if (!text) return;
-            const msg = {
-                id: Date.now(),
-                text,
-                mood: selectedMood,
-                time: new Date().toISOString(),
-                selfDestruct: deleteOn,
-                reactions: { heart: 0, fire: 0 },
-                reacted: {}
-            };
-            messages.unshift(msg);
-            save();
-            document.getElementById('msg-input').value = '';
-            document.getElementById('char-count').textContent = '0 / ' + MAX;
-            document.getElementById('send-btn').disabled = true;
-            showToast('✦ Message sent into the void');
+
+            btn.disabled = true;
+            btn.textContent = 'Sending...';
+
+            try {
+                await db.collection('messages').add({
+                    text,
+                    mood: selectedMood,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: 'unread'
+                });
+
+                document.getElementById('msg-input').value = '';
+                document.getElementById('char-count').textContent = '0 / ' + MAX;
+                showToast('Message sent successfully');
+            } catch (error) {
+                console.error("Error sending message:", error);
+                showToast('Failed to send. Try again.');
+                btn.disabled = false;
+            } finally {
+                btn.textContent = 'Send anonymously';
+            }
         }
 
 
 
-
-
-
-
-        function save() {
-            try { localStorage.setItem('whisper-msgs', JSON.stringify(messages)); } catch (e) { }
-        }
 
 
 
@@ -775,9 +781,7 @@
             setTimeout(() => t.classList.remove('show'), 2800);
         }
 
-
-
-
+        lucide.createIcons();
     </script>
 </body>
 
