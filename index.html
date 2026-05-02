@@ -399,6 +399,54 @@
             margin-bottom: 16px;
         }
 
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-family: var(--sans);
+            font-size: 15px;
+            outline: none;
+            color: var(--text);
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--accent);
+        }
+
+        .urgent-note {
+            background: rgba(22, 163, 74, 0.05);
+            border: 1px dashed rgba(22, 163, 74, 0.3);
+            color: var(--text);
+            padding: 16px;
+            border-radius: 14px;
+            margin-bottom: 24px;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .urgent-note b {
+            display: block;
+            margin-top: 8px;
+            color: var(--accent);
+        }
+
         /* ── FOOTER ── */
         footer {
             margin-top: auto;
@@ -527,6 +575,10 @@
             <button class="cta-btn" onclick="showView('submit')">
                 Submit Your Concern <i data-lucide="arrow-right"></i>
             </button>
+
+            <button class="cta-btn" style="margin-top: 12px; background: white; color: var(--accent); border: 1px solid var(--accent);" onclick="showView('counselling')">
+                Request Counselling Support <i data-lucide="heart"></i>
+            </button>
         </div>
 
         <!-- 📝 SUBMIT VIEW -->
@@ -556,6 +608,42 @@
             <p class="privacy-note">
                 Your identity is not required for submission. Any optional contact information provided will only be
                 used for issue resolution and will not be shared.
+            </p>
+        </div>
+
+        <!-- 💬 COUNSELLING VIEW -->
+        <div id="counselling-view" class="view">
+            <h2 class="section-heading">Student Support & Free Counselling</h2>
+            <p class="section-desc">
+                We understand that students may face academic pressure, stress, or personal challenges. The MSF unit at
+                Cochin University of Science and Technology offers a free and confidential counselling support system
+                for students who need guidance or someone to talk to.
+            </p>
+
+            <div class="urgent-note">
+                You can register for counselling support by providing your basic details below. A member of our team
+                will contact you as soon as possible.
+                <b>After registration, our team will contact you within a few hours.</b>
+                <b>If your matter is urgent, please contact directly: 9207210306</b>
+            </div>
+
+            <div class="input-group">
+                <label>Name</label>
+                <input type="text" id="counsel-name" placeholder="Enter your full name">
+            </div>
+
+            <div class="input-group">
+                <label>Contact Number</label>
+                <input type="tel" id="counsel-phone" placeholder="Enter your phone number">
+            </div>
+
+            <button class="submit-btn" id="counsel-btn" onclick="requestCounselling()">
+                Request Counselling Support
+            </button>
+
+            <p class="privacy-note">
+                Your information will be kept strictly confidential and used only for counselling support purposes. It
+                will not be shared with anyone outside the authorized MSF team.
             </p>
         </div>
 
@@ -675,6 +763,40 @@
             t.textContent = msg;
             t.classList.add('show');
             setTimeout(() => t.classList.remove('show'), 2800);
+        }
+
+        async function requestCounselling() {
+            const btn = document.getElementById('counsel-btn');
+            const name = document.getElementById('counsel-name').value.trim();
+            const phone = document.getElementById('counsel-phone').value.trim();
+
+            if (!name || !phone) {
+                showToast('Please fill all fields');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Submitting...';
+
+            try {
+                await db.collection('counselling').add({
+                    name,
+                    phone,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    status: 'unread'
+                });
+
+                document.getElementById('counsel-name').value = '';
+                document.getElementById('counsel-phone').value = '';
+                showToast('Registration successful');
+                setTimeout(() => showView('home'), 2000);
+            } catch (error) {
+                console.error("Error registering for counselling:", error);
+                showToast('Failed to register. Try again.');
+                btn.disabled = false;
+            } finally {
+                btn.textContent = 'Request Counselling Support';
+            }
         }
 
         lucide.createIcons();

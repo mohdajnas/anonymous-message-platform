@@ -402,6 +402,31 @@
         }
 
         .toast.show { transform: translateX(-50%) translateY(0); }
+
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 12px;
+        }
+
+        .tab {
+            padding: 8px 20px;
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .tab.active {
+            background: var(--accent-soft);
+            color: var(--accent);
+            border-color: rgba(22, 163, 74, 0.2);
+        }
     </style>
 </head>
 
@@ -442,8 +467,8 @@
         <div id="dash-view">
             <div class="dash-header">
                 <div class="dash-title">
-                    <h2>Messages Inbox</h2>
-                    <p>Manage and export anonymous submissions</p>
+                    <h2 id="view-title">Grievance Inbox</h2>
+                    <p id="view-subtitle">Manage and export anonymous submissions</p>
                 </div>
                 <div class="dash-actions">
                     <button class="btn btn-outline" onclick="exportCSV()">
@@ -453,6 +478,11 @@
                         <i data-lucide="log-out"></i> Logout
                     </button>
                 </div>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active" id="tab-messages" onclick="switchView('messages')">Grievances</div>
+                <div class="tab" id="tab-counselling" onclick="switchView('counselling')">Counselling Requests</div>
             </div>
 
             <div class="stats-grid">
@@ -469,7 +499,7 @@
             <div class="table-wrap">
                 <table id="message-table">
                     <thead>
-                        <tr>
+                        <tr id="table-head">
                             <th class="td-sl">#</th>
                             <th class="td-time">Timestamp</th>
                             <th class="td-msg">Message</th>
@@ -501,6 +531,35 @@
         const auth = firebase.auth();
 
         let allMessages = [];
+        let currentView = 'messages';
+
+        async function switchView(view) {
+            currentView = view;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('tab-' + view).classList.add('active');
+            
+            if (view === 'messages') {
+                document.getElementById('view-title').textContent = 'Grievance Inbox';
+                document.getElementById('view-subtitle').textContent = 'Manage and export anonymous submissions';
+                document.getElementById('table-head').innerHTML = `
+                    <th class="td-sl">#</th>
+                    <th class="td-time">Timestamp</th>
+                    <th class="td-msg">Message</th>
+                    <th class="copy-cell"></th>
+                `;
+            } else {
+                document.getElementById('view-title').textContent = 'Counselling Requests';
+                document.getElementById('view-subtitle').textContent = 'Manage students seeking support';
+                document.getElementById('table-head').innerHTML = `
+                    <th class="td-sl">#</th>
+                    <th class="td-time">Timestamp</th>
+                    <th class="td-msg">Name & Contact</th>
+                    <th class="copy-cell"></th>
+                `;
+            }
+            
+            fetchMessages();
+        }
 
         async function login() {
             const email = document.getElementById('email').value.trim();
@@ -532,7 +591,7 @@
 
         async function fetchMessages() {
             try {
-                const snapshot = await db.collection('messages').orderBy('timestamp', 'desc').get();
+                const snapshot = await db.collection(currentView).orderBy('timestamp', 'desc').get();
                 allMessages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 renderTable();
                 updateStats();
@@ -550,16 +609,33 @@
                 const row = document.createElement('tr');
                 const time = msg.timestamp ? new Date(msg.timestamp.seconds * 1000).toLocaleString() : 'N/A';
                 
-                row.innerHTML = `
-                    <td class="td-sl">${allMessages.length - index}</td>
-                    <td class="td-time">${time}</td>
-                    <td class="td-msg">${msg.text}</td>
-                    <td class="copy-cell">
-                        <button class="action-btn" onclick="copyText('${msg.text.replace(/'/g, "\\'")}')" title="Copy message">
-                            <i data-lucide="copy"></i>
-                        </button>
-                    </td>
-                `;
+                if (currentView === 'messages') {
+                    row.innerHTML = `
+                        <td class="td-sl">${allMessages.length - index}</td>
+                        <td class="td-time">${time}</td>
+                        <td class="td-msg">${msg.text}</td>
+                        <td class="copy-cell">
+                            <button class="action-btn" onclick="copyText('${msg.text.replace(/'/g, "\\'")}')" title="Copy message">
+                                <i data-lucide="copy"></i>
+                            </button>
+                        </td>
+                    `;
+                } else {
+                    const contactInfo = `Name: ${msg.name}\nPhone: ${msg.phone}`;
+                    row.innerHTML = `
+                        <td class="td-sl">${allMessages.length - index}</td>
+                        <td class="td-time">${time}</td>
+                        <td class="td-msg">
+                            <strong>${msg.name}</strong><br>
+                            <span style="color: var(--muted); font-size: 13px;">${msg.phone}</span>
+                        </td>
+                        <td class="copy-cell">
+                            <button class="action-btn" onclick="copyText('${contactInfo.replace(/'/g, "\\'")}')" title="Copy contact info">
+                                <i data-lucide="copy"></i>
+                            </button>
+                        </td>
+                    `;
+                }
                 tbody.appendChild(row);
             });
             lucide.createIcons();
@@ -579,17 +655,26 @@
         function exportCSV() {
             if (allMessages.length === 0) return;
             
-            let csv = 'Sl No,Timestamp,Message\n';
-            allMessages.forEach((msg, index) => {
-                const time = msg.timestamp ? new Date(msg.timestamp.seconds * 1000).toLocaleString() : 'N/A';
-                const escapedMsg = `"${msg.text.replace(/"/g, '""')}"`;
-                csv += `${allMessages.length - index},${time},${escapedMsg}\n`;
-            });
+            let csv = '';
+            if (currentView === 'messages') {
+                csv = 'Sl No,Timestamp,Message\n';
+                allMessages.forEach((msg, index) => {
+                    const time = msg.timestamp ? new Date(msg.timestamp.seconds * 1000).toLocaleString() : 'N/A';
+                    const escapedMsg = `"${msg.text.replace(/"/g, '""')}"`;
+                    csv += `${allMessages.length - index},${time},${escapedMsg}\n`;
+                });
+            } else {
+                csv = 'Sl No,Timestamp,Name,Phone\n';
+                allMessages.forEach((msg, index) => {
+                    const time = msg.timestamp ? new Date(msg.timestamp.seconds * 1000).toLocaleString() : 'N/A';
+                    csv += `${allMessages.length - index},${time},"${msg.name}","${msg.phone}"\n`;
+                });
+            }
 
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = `whisper_messages_${new Date().toISOString().split('T')[0]}.csv`;
+            link.download = `${currentView}_${new Date().toISOString().split('T')[0]}.csv`;
             link.click();
         }
 
