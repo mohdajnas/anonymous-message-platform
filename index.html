@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title>CUSAT MSF Student Support & Grievance Portal</title>
+    <title>MSF CUSAT Student Support & Grievance Portal</title>
     <link
         href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Anek+Malayalam:wght@100..800&display=swap"
         rel="stylesheet">
@@ -275,7 +275,7 @@
         }
 
         .optional-info-box {
-            background: rgba(22, 163, 74, 0.05);
+            background: #ffffff;
             border: 1px dashed rgba(22, 163, 74, 0.3);
             padding: 16px;
             border-radius: 14px;
@@ -476,7 +476,7 @@
                     <circle cx="14" cy="10.5" r="1" fill="var(--accent)" />
                 </svg>
             </div>
-            <h1>CUSAT MSF Student Support & Grievance Portal</h1>
+            <h1>msf CUSAT<br>Student Support & Grievance Portal</h1>
             <p class="subtitle">Student grievance collection system</p>
             <div class="disclaimer-top">
                 This platform is for genuine academic grievances. False or defamatory submissions are prohibited.
@@ -537,16 +537,16 @@
                 accurate details to help us take appropriate action.
             </p>
 
-            <div class="optional-info-box">
-                If you are comfortable, you may optionally provide contact information (such as email or phone number)
-                for clarification or follow-up regarding your complaint.
-                Providing contact details is completely voluntary and will be kept strictly confidential.
-            </div>
-
             <div class="textarea-wrap">
                 <textarea id="msg-input" placeholder="Type your grievance here..." maxlength="2000"
                     oninput="onInput()"></textarea>
                 <span class="char-count" id="char-count">0 / 2000</span>
+            </div>
+
+            <div class="optional-info-box">
+                If you are comfortable, you may optionally provide contact information (such as email or phone number)
+                for clarification or follow-up regarding your complaint.
+                Providing contact details is completely voluntary and will be kept strictly confidential.
             </div>
 
             <button class="submit-btn" id="send-btn" onclick="sendMessage()" disabled>
