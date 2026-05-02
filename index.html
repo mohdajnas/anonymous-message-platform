@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-    <title>MSF CUSAT Student Support & Grievance Portal</title>
+    <title>msf CUSAT Student Support & Grievance Portal</title>
     <link
         href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Anek+Malayalam:wght@100..800&display=swap"
         rel="stylesheet">
@@ -91,7 +91,7 @@
 
         h1 {
             font-family: var(--serif);
-            font-size: 28px;
+            font-size: clamp(22px, 7vw, 28px);
             font-weight: 500;
             color: var(--text);
             letter-spacing: -0.5px;
@@ -152,7 +152,7 @@
 
         /* ── VIEWS ── */
         .view {
-            padding: 0 24px 40px;
+            padding: 0 20px 40px;
             flex: 1;
             display: none;
             animation: fadeIn 0.4s ease both;
@@ -244,7 +244,7 @@
             background: var(--accent);
             color: white;
             border: none;
-            border-radius: 16px;
+            border-radius: 100px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
@@ -324,7 +324,7 @@
             background: var(--accent);
             color: white;
             border: none;
-            border-radius: 16px;
+            border-radius: 100px;
             font-size: 15px;
             font-weight: 600;
             cursor: pointer;
@@ -504,6 +504,16 @@
         .toast.show {
             transform: translateX(-50%) translateY(0);
         }
+
+        @media (max-width: 380px) {
+            header { padding: 30px 16px 20px; }
+            .view { padding: 0 16px 30px; }
+            .nav-link { padding: 8px 10px; font-size: 11px; }
+            .purpose-content { font-size: 15px; }
+            .cta-btn { padding: 15px; font-size: 15px; }
+            .highlight-card { padding: 12px; }
+            .disclaimer-top { font-size: 10px; padding: 6px 12px; }
+        }
     </style>
 </head>
 
@@ -573,11 +583,11 @@
             </div>
 
             <button class="cta-btn" onclick="showView('submit')">
-                Submit Your Concern <i data-lucide="arrow-right"></i>
+                Submit Your Concern
             </button>
 
             <button class="cta-btn" style="margin-top: 12px; background: white; color: var(--accent); border: 1px solid var(--accent);" onclick="showView('counselling')">
-                Request Counselling Support <i data-lucide="heart"></i>
+                Request Counselling Support
             </button>
         </div>
 
@@ -680,7 +690,7 @@
         </div>
 
         <footer>
-            <p class="footer-credit">© 2026 MSF CUSAT Unit. All rights reserved.</p>
+            <p class="footer-credit">© 2026 msf CUSAT Unit. All rights reserved.</p>
         </footer>
     </div>
 
