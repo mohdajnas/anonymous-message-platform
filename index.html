@@ -93,7 +93,7 @@
         h1 {
             font-family: var(--serif);
             font-size: clamp(22px, 7vw, 28px);
-            font-weight: 500;
+            font-weight: 600;
             color: var(--text);
             letter-spacing: -0.5px;
             margin-bottom: 8px;
@@ -509,13 +509,36 @@
         }
 
         @media (max-width: 380px) {
-            header { padding: 30px 16px 20px; }
-            .view { padding: 0 16px 30px; }
-            .nav-link { padding: 8px 10px; font-size: 11px; }
-            .purpose-content { font-size: 15px; }
-            .cta-btn { padding: 15px; font-size: 15px; }
-            .highlight-card { padding: 12px; }
-            .disclaimer-top { font-size: 10px; padding: 6px 12px; }
+            header {
+                padding: 30px 16px 20px;
+            }
+
+            .view {
+                padding: 0 16px 30px;
+            }
+
+            .nav-link {
+                padding: 8px 10px;
+                font-size: 11px;
+            }
+
+            .purpose-content {
+                font-size: 15px;
+            }
+
+            .cta-btn {
+                padding: 15px;
+                font-size: 15px;
+            }
+
+            .highlight-card {
+                padding: 12px;
+            }
+
+            .disclaimer-top {
+                font-size: 10px;
+                padding: 6px 12px;
+            }
         }
     </style>
 </head>
@@ -537,7 +560,7 @@
                     <circle cx="14" cy="10.5" r="1" fill="var(--accent)" />
                 </svg>
             </div>
-            <h1>msf CUSAT<br>Student Support & Grievance Portal</h1>
+            <h1>msf CUSAT<br>കരുതലോടെ ക്യാമ്പസ്, കൂടെയുണ്ട് എംഎസ്എഫ്.</h1>
             <p class="subtitle">Student grievance collection system</p>
             <div class="disclaimer-top">
                 This platform is for genuine academic grievances. False or defamatory submissions are prohibited.
@@ -589,7 +612,9 @@
                 Submit Your Concern
             </button>
 
-            <button class="cta-btn" style="margin-top: 12px; background: white; color: var(--accent); border: 1px solid var(--accent);" onclick="showView('counselling')">
+            <button class="cta-btn"
+                style="margin-top: 12px; background: white; color: var(--accent); border: 1px solid var(--accent);"
+                onclick="showView('counselling')">
                 Request Counselling Support
             </button>
         </div>
